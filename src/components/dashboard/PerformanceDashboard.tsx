@@ -194,11 +194,9 @@ export function PerformanceDashboard() {
                 );
               }}
             />
-            <Scatter data={scatterData} shape={(props: Record<string, unknown>) => {
-              const cx = props.cx as number;
-              const cy = props.cy as number;
-              const payload = props.payload as typeof scatterData[0];
-              return <circle cx={cx} cy={cy} r={8} fill={payload.color} fillOpacity={0.8} stroke="white" strokeWidth={1.5} />;
+            <Scatter data={scatterData} shape={(props: unknown) => {
+              const p = props as { cx: number; cy: number; payload: typeof scatterData[0] };
+              return <circle cx={p.cx} cy={p.cy} r={8} fill={p.payload.color} fillOpacity={0.8} stroke="white" strokeWidth={1.5} />;
             }} />
           </ScatterChart>
         </ResponsiveContainer>

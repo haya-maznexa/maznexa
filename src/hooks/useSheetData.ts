@@ -33,7 +33,7 @@ export function useSheetData() {
     staleTime: REFRESH_MS,
   });
 
-  const allRows = query.data?.rows ?? [];
+  const allRows = useMemo(() => query.data?.rows ?? [], [query.data?.rows]);
 
   const filtered = useMemo(() => applyFilters(allRows, filters), [allRows, filters]);
 
