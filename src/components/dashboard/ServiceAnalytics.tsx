@@ -12,15 +12,7 @@ import {
   AreaChart, Area, ComposedChart, Line,
 } from "recharts";
 import { Clock } from "lucide-react";
-
-const SERVICE_ICONS: Record<string, string> = {
-  "Social Media Management": "📱",
-  "Design": "🎨",
-  "Video/Photo session": "🎬",
-  "SEO": "🔍",
-  "CRM": "🤝",
-  "Campaigns": "📣",
-};
+import { ServiceIcon } from "@/components/ui/BrandIcon";
 
 export function ServiceAnalytics() {
   const { isLoading, byService, filtered } = useSheetData();
@@ -113,7 +105,9 @@ export function ServiceAnalytics() {
               <CardContent className="pt-4">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl">{SERVICE_ICONS[s.service] ?? "⚙️"}</span>
+                    <span className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center shrink-0">
+                      <ServiceIcon service={s.service} className="w-4 h-4" />
+                    </span>
                     <div>
                       <p className="text-sm font-bold leading-tight">{s.service}</p>
                       <p className="text-[10px] text-muted-foreground">
@@ -282,18 +276,21 @@ export function ServiceAnalytics() {
             return (
               <ChartCard
                 key={svc.service}
-                title={`${SERVICE_ICONS[svc.service] ?? "⚙️"}  ${svc.service}`}
+                title={svc.service}
                 subtitle={`${fmtHours(svc.hPlanned)} planned · ${fmtHours(svc.hDelivered)} actual · ${variance >= 0 ? "+" : ""}${fmtHours(variance)} variance`}
                 height={240}
                 loading={isLoading}
                 action={
-                  <Badge
-                    variant="outline"
-                    style={{ borderColor: color, color }}
-                    className="text-[10px]"
-                  >
-                    {fmtHours(svc.hDelivered)}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <ServiceIcon service={svc.service} className="w-4 h-4" />
+                    <Badge
+                      variant="outline"
+                      style={{ borderColor: color, color }}
+                      className="text-[10px]"
+                    >
+                      {fmtHours(svc.hDelivered)}
+                    </Badge>
+                  </div>
                 }
               >
                 {svc.series.length === 0 ? (

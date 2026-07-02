@@ -6,17 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { CustomTooltip } from "@/components/charts/CustomTooltip";
 import { fmt, fmtPct, fmtHours, rateColor, getColor, CHART_COLORS } from "@/lib/utils";
+import { PlatformIcon } from "@/components/ui/BrandIcon";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend,
   PieChart, Pie, Cell, ComposedChart, Line,
 } from "recharts";
-
-const PLATFORM_ICONS: Record<string, string> = {
-  Instagram: "📸", Facebook: "📘", TikTok: "🎵", LinkedIn: "💼",
-  X: "𝕏", Snapchat: "👻", Snap: "👻", YouTube: "▶️",
-  Pinterest: "📌", Google: "🔍", Offline: "🏢", "-": "❓",
-};
 
 export function PlatformAnalytics() {
   const { isLoading, byPlatform } = useSheetData();
@@ -52,7 +47,9 @@ export function PlatformAnalytics() {
             <Card className="group hover:shadow-card-hover transition-all duration-300">
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xl">{PLATFORM_ICONS[p.platform] ?? "📡"}</span>
+                  <span className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                    <PlatformIcon platform={p.platform} className="w-4 h-4" />
+                  </span>
                   <Badge
                     variant="outline"
                     style={{ borderColor: rateColor(p.completionRate), color: rateColor(p.completionRate) }}
@@ -149,8 +146,10 @@ export function PlatformAnalytics() {
                 {byPlatform.map((p, i) => (
                   <tr key={p.platform} className="hover:bg-muted/50 transition-colors">
                     <td className="py-2 font-medium">
-                      <span className="mr-1.5">{PLATFORM_ICONS[p.platform] ?? "📡"}</span>
-                      {p.platform}
+                      <span className="inline-flex items-center gap-1.5">
+                        <PlatformIcon platform={p.platform} className="w-3.5 h-3.5" />
+                        {p.platform}
+                      </span>
                     </td>
                     <td className="py-2 text-right">{fmt(p.deliverables)}</td>
                     <td className="py-2 text-right">{fmt(p.delivered)}</td>
