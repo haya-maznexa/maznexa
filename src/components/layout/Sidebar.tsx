@@ -34,7 +34,10 @@ export function Sidebar({ view, onViewChange, collapsed, onToggle }: Props) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-4 py-5 border-b border-border min-h-[64px]">
-        <div className="w-8 h-8 rounded-lg gradient-brand flex items-center justify-center shrink-0">
+        <div
+          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+          style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}
+        >
           <Sparkles className="w-4 h-4 text-white" />
         </div>
         <AnimatePresence>
@@ -45,7 +48,12 @@ export function Sidebar({ view, onViewChange, collapsed, onToggle }: Props) {
               exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
             >
-              <p className="text-sm font-bold text-gradient leading-tight">MazinXSA</p>
+              <p
+                className="text-sm font-bold leading-tight bg-clip-text text-transparent"
+                style={{ backgroundImage: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}
+              >
+                MazNexa
+              </p>
               <p className="text-[10px] text-muted-foreground font-medium">Analytics Platform</p>
             </motion.div>
           )}

@@ -6,8 +6,8 @@ import { Providers } from "@/providers/Providers";
 const inter = Inter({ subsets: ["latin"], variable: "--font-geist-sans" });
 
 export const metadata: Metadata = {
-  title: "MazinXSA — Analytics Dashboard",
-  description: "Executive reporting dashboard for MazinXSA",
+  title: "MazNexa — Analytics Dashboard",
+  description: "Executive reporting dashboard for MazNexa",
   icons: { icon: "/favicon.ico" },
 };
 
