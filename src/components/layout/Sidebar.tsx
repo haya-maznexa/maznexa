@@ -1,8 +1,9 @@
 "use client";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, TrendingUp, Building2, Globe, Wrench,
-  Clock, LineChart, Table2, ChevronLeft, ChevronRight, Sparkles,
+  Clock, LineChart, Table2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DashboardView } from "@/types";
@@ -33,31 +34,40 @@ export function Sidebar({ view, onViewChange, collapsed, onToggle }: Props) {
       className="relative flex flex-col h-screen bg-card border-r border-border shrink-0 z-20 overflow-hidden"
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-border min-h-[64px]">
-        <div
-          className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-          style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}
-        >
-          <Sparkles className="w-4 h-4 text-white" />
-        </div>
-        <AnimatePresence>
-          {!collapsed && (
+      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-border min-h-[64px]">
+        {collapsed ? (
+          <Image
+            src="/logo-icon.png"
+            alt="MazNexa"
+            width={32}
+            height={32}
+            className="w-8 h-8 object-contain shrink-0"
+            priority
+          />
+        ) : (
+          <AnimatePresence mode="wait">
             <motion.div
+              key="full-logo"
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -8 }}
               transition={{ duration: 0.15 }}
+              className="flex flex-col"
             >
-              <p
-                className="text-sm font-bold leading-tight bg-clip-text text-transparent"
-                style={{ backgroundImage: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}
-              >
-                MazNexa
+              <Image
+                src="/logo.png"
+                alt="MazNexa"
+                width={580}
+                height={120}
+                className="h-7 w-auto object-contain"
+                priority
+              />
+              <p className="text-[10px] text-muted-foreground font-medium mt-1 pl-0.5">
+                Analytics Platform
               </p>
-              <p className="text-[10px] text-muted-foreground font-medium">Analytics Platform</p>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
       </div>
 
       {/* Nav */}
