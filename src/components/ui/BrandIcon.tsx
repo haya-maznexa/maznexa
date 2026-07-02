@@ -1,7 +1,7 @@
 import {
-  SiInstagram, SiFacebook, SiTiktok, SiLinkedin, SiX,
-  SiSnapchat, SiYoutube, SiPinterest, SiGoogle,
-} from "react-icons/si";
+  FaInstagram, FaFacebook, FaTiktok, FaLinkedin, FaXTwitter,
+  FaSnapchat, FaYoutube, FaPinterest, FaGoogle,
+} from "react-icons/fa6";
 import {
   Globe, Building2, Share2, Palette, Video, Search,
   Users, Megaphone, Wrench, type LucideIcon,
@@ -16,17 +16,17 @@ interface PlatformDef {
 }
 
 const PLATFORMS: Record<string, PlatformDef> = {
-  instagram: { icon: SiInstagram, color: "#E4405F" },
-  facebook:  { icon: SiFacebook,  color: "#1877F2" },
-  tiktok:    { icon: SiTiktok,    color: "#000000" },
-  linkedin:  { icon: SiLinkedin,  color: "#0A66C2" },
-  x:         { icon: SiX,         color: "#000000" },
-  twitter:   { icon: SiX,         color: "#000000" },
-  snapchat:  { icon: SiSnapchat,  color: "#FFFC00" },
-  snap:      { icon: SiSnapchat,  color: "#FFFC00" },
-  youtube:   { icon: SiYoutube,   color: "#FF0000" },
-  pinterest: { icon: SiPinterest, color: "#BD081C" },
-  google:    { icon: SiGoogle,    color: "#4285F4" },
+  instagram: { icon: FaInstagram, color: "#E4405F" },
+  facebook:  { icon: FaFacebook,  color: "#1877F2" },
+  tiktok:    { icon: FaTiktok,    color: "#000000" },
+  linkedin:  { icon: FaLinkedin,  color: "#0A66C2" },
+  x:         { icon: FaXTwitter,  color: "#000000" },
+  twitter:   { icon: FaXTwitter,  color: "#000000" },
+  snapchat:  { icon: FaSnapchat,  color: "#FFFC00" },
+  snap:      { icon: FaSnapchat,  color: "#FFFC00" },
+  youtube:   { icon: FaYoutube,   color: "#FF0000" },
+  pinterest: { icon: FaPinterest, color: "#BD081C" },
+  google:    { icon: FaGoogle,    color: "#4285F4" },
   offline:   { icon: Building2,   color: "#64748B" },
 };
 
@@ -49,11 +49,14 @@ export function PlatformIcon({
     return <Globe className={className} style={{ color: "#5053C8" }} />;
   }
   const Icon = def.icon;
-  // Snapchat yellow needs a dark outline; keep it on a chip elsewhere.
+  // Black brand marks (X, TikTok) and bright yellow (Snapchat) need theme-safe colours.
+  let color = def.color;
+  if (color === "#000000") color = "hsl(var(--foreground))";
+  else if (color === "#FFFC00") color = "#E4B000";
   return (
     <Icon
       className={className}
-      style={brandColor ? { color: def.color === "#FFFC00" ? "#E4B000" : def.color } : undefined}
+      style={brandColor ? { color } : undefined}
     />
   );
 }
