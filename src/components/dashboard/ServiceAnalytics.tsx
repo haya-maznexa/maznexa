@@ -61,9 +61,15 @@ export function ServiceAnalytics() {
     color: CHART_COLORS[i],
   }));
 
-  const pieData = byService.map((s, i) => ({
-    name: s.service, value: s.hDelivered, color: CHART_COLORS[i],
-  }));
+  // Hours-based services → hours charts; deliverable-based → deliverables chart
+  const hoursData = data.filter((d) => d.HDelivered > 0);
+  const deliverableData = data.filter((d) => d.Delivered > 0 || d.Planned > 0);
+
+  const pieData = byService
+    .filter((s) => s.hDelivered > 0)
+    .map((s, i) => ({
+      name: s.service, value: s.hDelivered, color: CHART_COLORS[i],
+    }));
 
   const radarData = [
     { metric: "Completion %" },
@@ -125,58 +131,64 @@ export function ServiceAnalytics() {
                   </Badge>
                 </div>
 
-                {/* Deliverables row */}
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70 mb-1.5">
-                  Deliverables
-                </p>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  {[
-                    { label: "Planned", value: fmt(s.deliverables) },
-                    { label: "Delivered", value: fmt(s.delivered) },
-                    { label: "Extra", value: fmt(s.extra) },
-                  ].map((m) => (
-                    <div key={m.label} className="bg-muted rounded-lg py-1.5 px-1">
-                      <p className="text-sm font-bold text-foreground">{m.value}</p>
-                      <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                {/* Hours-based services (CRM, SEO, Design, Video/Photo) → hours only.
+                    Deliverable-based services (Social Media, Campaigns) → deliverables only. */}
+                {isHoursBased ? (
+                  <>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70 mb-1.5">
+                      Hours <span className="text-muted-foreground/50 normal-case">(counted hourly)</span>
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      {[
+                        { label: "Planned", value: fmtHours(s.hPlanned) },
+                        { label: "Actual", value: fmtHours(s.hDelivered) },
+                        {
+                          label: "Variance",
+                          value: `${s.hDelivered - s.hPlanned >= 0 ? "+" : ""}${fmtHours(s.hDelivered - s.hPlanned)}`,
+                        },
+                      ].map((m, idx) => (
+                        <div
+                          key={m.label}
+                          className="rounded-lg py-1.5 px-1"
+                          style={{ background: "rgba(80,83,200,0.08)" }}
+                        >
+                          <p
+                            className="text-sm font-bold"
+                            style={{
+                              color:
+                                idx === 2
+                                  ? s.hDelivered > s.hPlanned
+                                    ? "#F59E0B"
+                                    : "#10B981"
+                                  : "#5053C8",
+                            }}
+                          >
+                            {m.value}
+                          </p>
+                          <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-
-                {/* Hours row */}
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70 mt-3 mb-1.5">
-                  Hours
-                </p>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  {[
-                    { label: "Planned", value: fmtHours(s.hPlanned) },
-                    { label: "Actual", value: fmtHours(s.hDelivered) },
-                    {
-                      label: "Variance",
-                      value: `${s.hDelivered - s.hPlanned >= 0 ? "+" : ""}${fmtHours(s.hDelivered - s.hPlanned)}`,
-                    },
-                  ].map((m, idx) => (
-                    <div
-                      key={m.label}
-                      className="rounded-lg py-1.5 px-1"
-                      style={{ background: "rgba(80,83,200,0.08)" }}
-                    >
-                      <p
-                        className="text-sm font-bold"
-                        style={{
-                          color:
-                            idx === 2
-                              ? s.hDelivered > s.hPlanned
-                                ? "#F59E0B"
-                                : "#10B981"
-                              : "#5053C8",
-                        }}
-                      >
-                        {m.value}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70 mb-1.5">
+                      Deliverables
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      {[
+                        { label: "Planned", value: fmt(s.deliverables) },
+                        { label: "Delivered", value: fmt(s.delivered) },
+                        { label: "Extra", value: fmt(s.extra) },
+                      ].map((m) => (
+                        <div key={m.label} className="bg-muted rounded-lg py-1.5 px-1">
+                          <p className="text-sm font-bold text-foreground">{m.value}</p>
+                          <p className="text-[10px] text-muted-foreground">{m.label}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -188,7 +200,7 @@ export function ServiceAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ChartCard title="Hours by Service" subtitle="Planned vs actual hours" height={280} loading={isLoading}>
           <ResponsiveContainer>
-            <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 100, bottom: 0 }}>
+            <BarChart data={hoursData} layout="vertical" margin={{ top: 0, right: 16, left: 100, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
               <XAxis type="number" tick={{ fontSize: 10 }} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={98} />
@@ -214,9 +226,9 @@ export function ServiceAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChartCard title="Deliverables by Service" subtitle="Planned vs Delivered" height={260} loading={isLoading}>
+        <ChartCard title="Deliverables by Service" subtitle="Planned vs Delivered (count-based services)" height={260} loading={isLoading}>
           <ResponsiveContainer>
-            <BarChart data={data} margin={{ top: 4, right: 8, bottom: 30, left: -20 }}>
+            <BarChart data={deliverableData} margin={{ top: 4, right: 8, bottom: 30, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-25} textAnchor="end" interval={0} />
               <YAxis tick={{ fontSize: 10 }} />
@@ -224,7 +236,7 @@ export function ServiceAnalytics() {
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <Bar dataKey="Planned" fill="#B5B9FE" radius={[3, 3, 0, 0]} />
               <Bar dataKey="Delivered" radius={[3, 3, 0, 0]}>
-                {data.map((d, i) => <Cell key={i} fill={d.color} />)}
+                {deliverableData.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
