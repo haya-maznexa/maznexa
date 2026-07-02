@@ -20,24 +20,8 @@ export interface SheetRow {
 
 // ─── Filter State ─────────────────────────────────────────────────────────────
 
-export type DatePreset =
-  | "last7"
-  | "last30"
-  | "thisMonth"
-  | "prevMonth"
-  | "thisQuarter"
-  | "thisYear"
-  | "allTime"
-  | "custom";
-
-export interface DateRange {
-  from: Date | null;
-  to: Date | null;
-}
-
 export interface FilterState {
-  preset: DatePreset;
-  dateRange: DateRange;
+  months: string[]; // monthKeys, e.g. ["2025-08", "2025-07"]
   brands: string[];
   platforms: string[];
   services: string[];

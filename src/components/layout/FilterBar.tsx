@@ -1,37 +1,35 @@
 "use client";
-import { X, CalendarDays, SlidersHorizontal } from "lucide-react";
+import { X, SlidersHorizontal, CalendarDays } from "lucide-react";
 import { useFilterStore } from "@/store/filterStore";
 import { useSheetData } from "@/hooks/useSheetData";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { DatePreset } from "@/types";
 import * as Popover from "@radix-ui/react-popover";
 import { useState } from "react";
 
-const PRESETS: { id: DatePreset; label: string }[] = [
-  { id: "allTime",     label: "All Time" },
-  { id: "thisMonth",   label: "This Month" },
-  { id: "prevMonth",   label: "Last Month" },
-  { id: "thisQuarter", label: "This Quarter" },
-  { id: "thisYear",    label: "This Year" },
-  { id: "last30",      label: "Last 30 Days" },
-  { id: "last7",       label: "Last 7 Days" },
-];
+interface Option {
+  value: string;
+  label: string;
+}
 
 function MultiSelectFilter({
   label,
+  icon,
   options,
   selected,
   onChange,
 }: {
   label: string;
-  options: string[];
+  icon?: React.ReactNode;
+  options: Option[];
   selected: string[];
   onChange: (v: string[]) => void;
 }) {
   const [search, setSearch] = useState("");
-  const filtered = options.filter((o) => o.toLowerCase().includes(search.toLowerCase()));
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <Popover.Root>
@@ -44,6 +42,7 @@ function MultiSelectFilter({
               : "border-input bg-background text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
+          {icon}
           {label}
           {selected.length > 0 && (
             <Badge variant="default" className="ml-0.5 h-4 px-1 text-[10px]">
@@ -56,7 +55,7 @@ function MultiSelectFilter({
         <Popover.Content
           align="start"
           sideOffset={6}
-          className="z-50 w-52 rounded-xl bg-popover border border-border shadow-lg p-2 animate-fade-in"
+          className="z-50 w-56 rounded-xl bg-popover border border-border shadow-lg p-2 animate-fade-in"
         >
           <input
             value={search}
@@ -64,15 +63,17 @@ function MultiSelectFilter({
             placeholder={`Search ${label.toLowerCase()}…`}
             className="w-full h-8 px-3 mb-2 text-xs rounded-lg bg-muted outline-none border border-input"
           />
-          <div className="max-h-48 overflow-y-auto scrollbar-thin space-y-0.5">
+          <div className="max-h-56 overflow-y-auto scrollbar-thin space-y-0.5">
             {filtered.map((opt) => {
-              const checked = selected.includes(opt);
+              const checked = selected.includes(opt.value);
               return (
                 <button
-                  key={opt}
+                  key={opt.value}
                   onClick={() =>
                     onChange(
-                      checked ? selected.filter((s) => s !== opt) : [...selected, opt]
+                      checked
+                        ? selected.filter((s) => s !== opt.value)
+                        : [...selected, opt.value]
                     )
                   }
                   className={cn(
@@ -88,7 +89,7 @@ function MultiSelectFilter({
                   >
                     {checked && <span className="block w-1.5 h-1.5 bg-white rounded-sm" />}
                   </span>
-                  {opt}
+                  {opt.label}
                 </button>
               );
             })}
@@ -110,12 +111,18 @@ function MultiSelectFilter({
   );
 }
 
+const toOptions = (values: string[]): Option[] =>
+  values.map((v) => ({ value: v, label: v }));
+
 export function FilterBar() {
   const filters = useFilterStore();
-  const { filterOptions } = useSheetData();
+  const { filterOptions, monthList } = useSheetData();
+
+  const monthLabel = (key: string) =>
+    monthList.find((m) => m.key === key)?.label ?? key;
 
   const hasActive =
-    filters.preset !== "allTime" ||
+    filters.months.length > 0 ||
     filters.brands.length > 0 ||
     filters.platforms.length > 0 ||
     filters.services.length > 0;
@@ -124,47 +131,43 @@ export function FilterBar() {
     <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 px-6 py-3 bg-background/80 backdrop-blur-md border-b border-border no-print">
       <SlidersHorizontal className="w-4 h-4 text-muted-foreground shrink-0" />
 
-      {/* Date presets */}
-      <div className="flex items-center gap-1 bg-muted rounded-lg p-0.5">
-        {PRESETS.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => filters.setPreset(p.id)}
-            className={cn(
-              "h-7 px-2.5 rounded-md text-xs font-medium transition-all",
-              filters.preset === p.id
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            {p.label}
-          </button>
-        ))}
-      </div>
+      {/* Month filter */}
+      <MultiSelectFilter
+        label="Month"
+        icon={<CalendarDays className="w-3.5 h-3.5" />}
+        options={monthList.map((m) => ({ value: m.key, label: m.label }))}
+        selected={filters.months}
+        onChange={filters.setMonths}
+      />
 
       <div className="w-px h-5 bg-border mx-1" />
 
       {/* Multi-select filters */}
       <MultiSelectFilter
         label="Brand"
-        options={filterOptions.brands}
+        options={toOptions(filterOptions.brands)}
         selected={filters.brands}
         onChange={filters.setBrands}
       />
       <MultiSelectFilter
         label="Platform"
-        options={filterOptions.platforms}
+        options={toOptions(filterOptions.platforms)}
         selected={filters.platforms}
         onChange={filters.setPlatforms}
       />
       <MultiSelectFilter
         label="Service"
-        options={filterOptions.services}
+        options={toOptions(filterOptions.services)}
         selected={filters.services}
         onChange={filters.setServices}
       />
 
       {/* Active filter chips */}
+      {filters.months.map((m) => (
+        <Badge key={m} variant="secondary" className="gap-1 cursor-pointer" onClick={() => filters.setMonths(filters.months.filter((x) => x !== m))}>
+          {monthLabel(m)} <X className="w-2.5 h-2.5" />
+        </Badge>
+      ))}
       {filters.brands.map((b) => (
         <Badge key={b} variant="secondary" className="gap-1 cursor-pointer" onClick={() => filters.setBrands(filters.brands.filter((x) => x !== b))}>
           {b} <X className="w-2.5 h-2.5" />

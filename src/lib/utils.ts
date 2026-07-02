@@ -1,7 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import type { SheetRow, FilterState } from "@/types";
-import { startOfMonth, endOfMonth, subDays, subMonths, startOfQuarter, endOfQuarter, startOfYear } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -26,52 +25,25 @@ export function shortMonthLabel(monthKey: string): string {
   return date.toLocaleDateString("en-US", { month: "short", year: "2-digit" });
 }
 
-// ─── Date range from preset ───────────────────────────────────────────────────
-// `reference` is the anchor date. For historical sheet data we anchor to the
-// latest month present in the data, so "This Month", "Last 30 Days" etc. stay
-// meaningful even when the sheet is not up to the current real-world date.
+// ─── Month options from data ──────────────────────────────────────────────────
+// Returns unique months present in the data, newest first, as
+// { key: "2025-08", label: "Aug 2025" } for use in the month filter dropdown.
 
-export function resolveDateRange(
-  filters: FilterState,
-  reference?: Date
-): { from: Date; to: Date } | null {
-  const anchor = reference ?? new Date();
-  switch (filters.preset) {
-    case "last7":
-      return { from: subDays(anchor, 6), to: anchor };
-    case "last30":
-      return { from: subDays(anchor, 29), to: anchor };
-    case "thisMonth":
-      return { from: startOfMonth(anchor), to: endOfMonth(anchor) };
-    case "prevMonth": {
-      const prev = subMonths(anchor, 1);
-      return { from: startOfMonth(prev), to: endOfMonth(prev) };
-    }
-    case "thisQuarter":
-      return { from: startOfQuarter(anchor), to: endOfQuarter(anchor) };
-    case "thisYear":
-      return { from: startOfYear(anchor), to: endOfMonth(anchor) };
-    case "allTime":
-      return null;
-    case "custom":
-      return filters.dateRange.from && filters.dateRange.to
-        ? { from: filters.dateRange.from, to: filters.dateRange.to }
-        : null;
-    default:
-      return null;
-  }
-}
-
-// Latest month present in the dataset (used as the date-filter anchor).
-function latestDataDate(rows: SheetRow[]): Date | undefined {
-  let max: Date | undefined;
+export function monthOptions(rows: SheetRow[]): { key: string; label: string }[] {
+  const keys = new Set<string>();
   for (const r of rows) {
-    if (!r.monthKey || r.monthKey === "0000-00") continue;
-    const d = new Date(r.year, r.monthIndex - 1, 1);
-    if (!max || d > max) max = d;
+    if (r.monthKey && r.monthKey !== "0000-00") keys.add(r.monthKey);
   }
-  // anchor to the end of that month so the whole month is included
-  return max ? endOfMonth(max) : undefined;
+  return Array.from(keys)
+    .sort((a, b) => b.localeCompare(a)) // newest first
+    .map((key) => {
+      const [y, m] = key.split("-");
+      const d = new Date(Number(y), Number(m) - 1, 1);
+      return {
+        key,
+        label: d.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
+      };
+    });
 }
 
 // ─── Apply filters to rows ────────────────────────────────────────────────────
@@ -79,17 +51,8 @@ function latestDataDate(rows: SheetRow[]): Date | undefined {
 export function applyFilters(rows: SheetRow[], filters: FilterState): SheetRow[] {
   let filtered = rows;
 
-  const reference = latestDataDate(rows);
-  const range = resolveDateRange(filters, reference);
-  if (range) {
-    filtered = filtered.filter((r) => {
-      if (!r.monthKey || r.monthKey === "0000-00") return true;
-      // A row represents a whole month; include it if that month overlaps the range.
-      const monthStart = new Date(r.year, r.monthIndex - 1, 1);
-      const monthEnd = endOfMonth(monthStart);
-      return monthEnd >= range.from && monthStart <= range.to;
-    });
-  }
+  if (filters.months.length > 0)
+    filtered = filtered.filter((r) => filters.months.includes(r.monthKey));
 
   if (filters.brands.length > 0)
     filtered = filtered.filter((r) => filters.brands.includes(r.company));

@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import type { SheetRow } from "@/types";
 import { useFilterStore } from "@/store/filterStore";
-import { applyFilters } from "@/lib/utils";
+import { applyFilters, monthOptions } from "@/lib/utils";
 import {
   computeKPIs,
   computeByBrand,
@@ -58,6 +58,9 @@ export function useSheetData() {
     [allRows]
   );
 
+  // Months present in the data (newest first) for the month filter dropdown
+  const monthList = useMemo(() => monthOptions(allRows), [allRows]);
+
   return {
     isLoading: query.isLoading,
     isError: query.isError,
@@ -73,6 +76,7 @@ export function useSheetData() {
     trends,
     insights,
     filterOptions,
+    monthList,
     refetch: query.refetch,
   };
 }
