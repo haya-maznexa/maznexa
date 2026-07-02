@@ -81,30 +81,38 @@ export function uniqueValues<K extends keyof SheetRow>(rows: SheetRow[], key: K)
   return Array.from(new Set(rows.map((r) => String(r[key])))).filter(Boolean).sort();
 }
 
-// ─── Chart colour palette (neutral, works on any brand) ──────────────────────
+// ─── MazNexa brand chart palette ─────────────────────────────────────────────
+// Purple / violet / indigo family derived from the brand gradient
+// (#5053C8 → #BE98FF) with supporting blues for contrast.
 
 export const CHART_COLORS = [
-  "#3B82F6", // blue
-  "#10B981", // emerald
+  "#5053C8", // brand primary indigo
+  "#BE98FF", // brand accent violet
+  "#7B6FE0", // mid purple
   "#8B5CF6", // violet
-  "#F59E0B", // amber
-  "#EF4444", // red
-  "#06B6D4", // cyan
-  "#EC4899", // pink
-  "#84CC16", // lime
-  "#F97316", // orange
+  "#B5B9FE", // supporting periwinkle
   "#6366F1", // indigo
-  "#14B8A6", // teal
-  "#A855F7", // purple
+  "#A78BFA", // light violet
+  "#4F46E5", // deep indigo
+  "#818CF8", // soft indigo
+  "#C4B5FD", // lavender
+  "#7C93F5", // blue-violet
+  "#9B8AFB", // pastel purple
 ];
+
+// Brand gradient stops for use in chart <defs>
+export const BRAND_PRIMARY = "#5053C8";
+export const BRAND_ACCENT = "#BE98FF";
+export const BRAND_SUPPORT = "#B5B9FE";
+export const BRAND_SECONDARY = "#CFE7FE";
 
 export function getColor(index: number): string {
   return CHART_COLORS[index % CHART_COLORS.length];
 }
 
 export function rateColor(rate: number): string {
-  if (rate >= 95) return "#10B981";
-  if (rate >= 80) return "#3B82F6";
-  if (rate >= 60) return "#F59E0B";
-  return "#EF4444";
+  if (rate >= 95) return "#10B981"; // green — on/over target
+  if (rate >= 80) return "#5053C8"; // brand — healthy
+  if (rate >= 60) return "#F59E0B"; // amber — watch
+  return "#EF4444";                 // red — at risk
 }

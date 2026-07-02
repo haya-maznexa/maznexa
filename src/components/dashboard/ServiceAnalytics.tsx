@@ -128,8 +128,8 @@ export function ServiceAnalytics() {
               <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={98} />
               <Tooltip content={<CustomTooltip formatter={(v) => [`${v}h`, ""]} />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="HPlanned" name="Planned h" fill="#93C5FD" radius={[0, 3, 3, 0]} />
-              <Bar dataKey="HDelivered" name="Actual h" fill="#3B82F6" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="HPlanned" name="Planned h" fill="#B5B9FE" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="HDelivered" name="Actual h" fill="#5053C8" radius={[0, 3, 3, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -156,7 +156,7 @@ export function ServiceAnalytics() {
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Planned" fill="#93C5FD" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Planned" fill="#B5B9FE" radius={[3, 3, 0, 0]} />
               <Bar dataKey="Delivered" radius={[3, 3, 0, 0]}>
                 {data.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>

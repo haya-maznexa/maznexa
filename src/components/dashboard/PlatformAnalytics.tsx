@@ -94,7 +94,7 @@ export function PlatformAnalytics() {
                 formatter={(value: unknown, name: string) => [fmt(Number(value)), name]}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Planned" fill="#93C5FD" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Planned" fill="#B5B9FE" radius={[3, 3, 0, 0]} />
               <Bar dataKey="Delivered" radius={[3, 3, 0, 0]}>
                 {data.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>

@@ -122,8 +122,8 @@ export function Trends() {
           <AreaChart data={trendData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
             <defs>
               <linearGradient id="gTrend" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                <stop offset="5%" stopColor="#5053C8" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#5053C8" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -131,8 +131,8 @@ export function Trends() {
             <YAxis tick={{ fontSize: 10 }} />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area type="monotone" dataKey="Delivered" stroke="#3B82F6" fill="url(#gTrend)" strokeWidth={2} />
-            <Line type="monotone" dataKey="Moving Avg" stroke="#8B5CF6" strokeWidth={2.5} dot={false} strokeDasharray="6 2" />
+            <Area type="monotone" dataKey="Delivered" stroke="#5053C8" fill="url(#gTrend)" strokeWidth={2} />
+            <Line type="monotone" dataKey="Moving Avg" stroke="#BE98FF" strokeWidth={2.5} dot={false} strokeDasharray="6 2" />
           </AreaChart>
         </ResponsiveContainer>
       </ChartCard>
@@ -166,7 +166,7 @@ export function Trends() {
               <Tooltip content={<CustomTooltip formatter={(v) => [`${v}%`, ""]} />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
               <ReferenceLine y={100} stroke="#34D399" strokeDasharray="4 2" strokeWidth={1.5} />
-              <Line type="monotone" dataKey="Completion %" stroke="#3B82F6" strokeWidth={2.5} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="Completion %" stroke="#5053C8" strokeWidth={2.5} dot={{ r: 3 }} />
               <Line type="monotone" dataKey="H Efficiency" stroke="#F59E0B" strokeWidth={2} dot={false} strokeDasharray="4 2" />
             </LineChart>
           </ResponsiveContainer>

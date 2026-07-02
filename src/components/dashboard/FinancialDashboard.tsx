@@ -10,7 +10,7 @@ import { fmt, fmtHours, fmtPct, shortMonthLabel, CHART_COLORS, getColor } from "
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, Legend,
-  ComposedChart, ReferenceLine, Cell, PieChart, Pie,
+  ComposedChart, ReferenceLine, Cell, PieChart, Pie, LabelList,
 } from "recharts";
 
 function StatCard({
@@ -81,6 +81,19 @@ export function FinancialDashboard() {
     name: b.brand, value: b.hDelivered, color: CHART_COLORS[i],
   }));
 
+  // ── Hours split by service (hours only, delivered) ──
+  // Only services that actually logged hours (Design, SEO, CRM, Video/Photo …)
+  const serviceHours = [...byService]
+    .filter((s) => s.hDelivered > 0)
+    .sort((a, b) => b.hDelivered - a.hDelivered)
+    .map((s, i) => ({
+      name: s.service,
+      short: s.service.length > 16 ? s.service.slice(0, 16) + "…" : s.service,
+      hours: Math.round(s.hDelivered),
+      color: CHART_COLORS[i],
+    }));
+  const totalServiceHours = serviceHours.reduce((sum, s) => sum + s.hours, 0);
+
   // Overtime leaders
   const overtimeBrands = [...byBrand]
     .map((b) => ({ name: b.brand, overtime: b.hDelivered - b.hPlanned, eff: b.hoursEfficiency }))
@@ -95,7 +108,7 @@ export function FinancialDashboard() {
           value={fmtHours(kpis.totalHPlanned)}
           sub="Contracted scope"
           icon={Clock}
-          color="#3B82F6"
+          color="#5053C8"
           delay={0}
         />
         <StatCard
@@ -103,7 +116,7 @@ export function FinancialDashboard() {
           value={fmtHours(kpis.totalHDelivered)}
           sub="Actual work done"
           icon={Clock}
-          color="#3B82F6"
+          color="#5053C8"
           delay={0.05}
         />
         <StatCard
@@ -129,7 +142,7 @@ export function FinancialDashboard() {
           value={fmtHours(kpis.totalHExtra)}
           sub="Unplanned work logged"
           icon={Clock}
-          color="#8B5CF6"
+          color="#BE98FF"
           delay={0.2}
         />
         <StatCard
@@ -137,7 +150,7 @@ export function FinancialDashboard() {
           value={fmtHours(kpis.activeBrands > 0 ? kpis.totalHDelivered / kpis.activeBrands : 0)}
           sub="Per active brand"
           icon={Clock}
-          color="#A78BFA"
+          color="#BE98FF"
           delay={0.25}
         />
         <StatCard
@@ -145,7 +158,7 @@ export function FinancialDashboard() {
           value={fmtHours(kpis.activeMonths > 0 ? kpis.totalHDelivered / kpis.activeMonths : 0)}
           sub="Per tracked month"
           icon={Clock}
-          color="#38BDF8"
+          color="#7B6FE0"
           delay={0.3}
         />
         <StatCard
@@ -153,9 +166,86 @@ export function FinancialDashboard() {
           value={fmtHours(kpis.activeServices > 0 ? kpis.totalHDelivered / kpis.activeServices : 0)}
           sub="Per service category"
           icon={Clock}
-          color="#FB923C"
+          color="#8B5CF6"
           delay={0.35}
         />
+      </div>
+
+      {/* ── Hours by Service (split, hours only) ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Donut: share of hours per service */}
+        <ChartCard
+          title="Hours by Service"
+          subtitle="Share of delivered hours"
+          height={300}
+          loading={isLoading}
+        >
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={serviceHours}
+                cx="50%"
+                cy="50%"
+                innerRadius={62}
+                outerRadius={100}
+                paddingAngle={3}
+                dataKey="hours"
+                nameKey="name"
+              >
+                {serviceHours.map((s, i) => (
+                  <Cell key={i} fill={s.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                content={
+                  <CustomTooltip
+                    formatter={(v, n) => [
+                      `${fmtHours(Number(v))} · ${totalServiceHours ? ((Number(v) / totalServiceHours) * 100).toFixed(1) : 0}%`,
+                      n,
+                    ]}
+                  />
+                }
+              />
+              <Legend formatter={(v) => <span style={{ fontSize: 11 }}>{v}</span>} />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Horizontal bars: hours per service with value labels */}
+        <ChartCard
+          title="Delivered Hours per Service"
+          subtitle="Design · SEO · CRM · Video/Photo and more"
+          height={300}
+          loading={isLoading}
+          className="lg:col-span-2"
+        >
+          <ResponsiveContainer>
+            <BarChart
+              data={serviceHours}
+              layout="vertical"
+              margin={{ top: 4, right: 56, left: 110, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 10 }} />
+              <YAxis type="category" dataKey="short" tick={{ fontSize: 11 }} width={104} />
+              <Tooltip
+                content={<CustomTooltip formatter={(v, n) => [fmtHours(Number(v)), n]} />}
+                cursor={{ fill: "hsl(var(--muted))", opacity: 0.4 }}
+              />
+              <Bar dataKey="hours" radius={[0, 6, 6, 0]}>
+                {serviceHours.map((s, i) => (
+                  <Cell key={i} fill={s.color} />
+                ))}
+                <LabelList
+                  dataKey="hours"
+                  position="right"
+                  formatter={(v: React.ReactNode) => fmtHours(Number(v))}
+                  style={{ fontSize: 11, fill: "hsl(var(--foreground))", fontWeight: 600 }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
       </div>
 
       {/* Monthly area — planned vs actual */}
@@ -169,12 +259,12 @@ export function FinancialDashboard() {
           <ComposedChart data={monthlyData} margin={{ top: 4, right: 8, bottom: 0, left: -10 }}>
             <defs>
               <linearGradient id="gHP" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                <stop offset="5%" stopColor="#5053C8" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#5053C8" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gHA" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                <stop offset="5%" stopColor="#5053C8" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#5053C8" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -183,8 +273,8 @@ export function FinancialDashboard() {
             <YAxis yAxisId="eff" orientation="right" tick={{ fontSize: 10 }} unit="%" domain={[0, 130]} />
             <Tooltip content={<CustomTooltip />} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Area yAxisId="h" type="monotone" dataKey="Planned h" stroke="#3B82F6" fill="url(#gHP)" strokeWidth={2} />
-            <Area yAxisId="h" type="monotone" dataKey="Actual h" stroke="#3B82F6" fill="url(#gHA)" strokeWidth={2} />
+            <Area yAxisId="h" type="monotone" dataKey="Planned h" stroke="#5053C8" fill="url(#gHP)" strokeWidth={2} />
+            <Area yAxisId="h" type="monotone" dataKey="Actual h" stroke="#5053C8" fill="url(#gHA)" strokeWidth={2} />
             <Line yAxisId="eff" type="monotone" dataKey="Efficiency %" stroke="#34D399" strokeWidth={2} strokeDasharray="5 2" dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
@@ -227,7 +317,7 @@ export function FinancialDashboard() {
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip content={<CustomTooltip formatter={(v) => [`${v}h`, ""]} />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Planned h" fill="#93C5FD" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Planned h" fill="#B5B9FE" radius={[3, 3, 0, 0]} />
               <Bar dataKey="Actual h" radius={[3, 3, 0, 0]}>
                 {brandData.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>
@@ -251,7 +341,7 @@ export function FinancialDashboard() {
               <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={98} />
               <Tooltip content={<CustomTooltip formatter={(v) => [`${v}h`, ""]} />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Planned h" fill="#93C5FD" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="Planned h" fill="#B5B9FE" radius={[0, 3, 3, 0]} />
               <Bar dataKey="Actual h" radius={[0, 3, 3, 0]}>
                 {serviceData.map((d, i) => <Cell key={i} fill={d.color} />)}
               </Bar>
@@ -303,9 +393,9 @@ export function FinancialDashboard() {
               <Line
                 type="monotone"
                 dataKey="Efficiency %"
-                stroke="#3B82F6"
+                stroke="#5053C8"
                 strokeWidth={2.5}
-                dot={{ r: 4, fill: "#3B82F6" }}
+                dot={{ r: 4, fill: "#5053C8" }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>

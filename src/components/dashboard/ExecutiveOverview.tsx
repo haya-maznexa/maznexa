@@ -43,15 +43,15 @@ function KPICard({
       <Card className="group hover:shadow-card-hover transition-shadow duration-300 overflow-hidden relative">
         <div
           className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity"
-          style={{ background: `radial-gradient(ellipse at top right, ${color ?? "#3B82F6"}, transparent 70%)` }}
+          style={{ background: `radial-gradient(ellipse at top right, ${color ?? "#5053C8"}, transparent 70%)` }}
         />
         <CardContent className="pt-5">
           <div className="flex items-start justify-between">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: `${color ?? "#3B82F6"}18` }}
+              style={{ background: `${color ?? "#5053C8"}18` }}
             >
-              <Icon className="w-5 h-5" style={{ color: color ?? "#3B82F6" }} />
+              <Icon className="w-5 h-5" style={{ color: color ?? "#5053C8" }} />
             </div>
             {trend && (
               <TrendIcon className={`w-4 h-4 ${trendColor}`} />
@@ -116,21 +116,21 @@ export function ExecutiveOverview() {
   }
 
   const kpiCards = [
-    { icon: Package,     label: "Total Deliverables", value: fmt(kpis.totalDeliverables), color: "#3B82F6", trend: "up" as const },
+    { icon: Package,     label: "Total Deliverables", value: fmt(kpis.totalDeliverables), color: "#5053C8", trend: "up" as const },
     { icon: CheckCircle2,label: "Total Delivered",    value: fmt(kpis.totalDelivered),    color: "#34D399", trend: "up" as const },
-    { icon: TrendingUp,  label: "Extras Delivered",   value: fmt(kpis.totalExtra),        color: "#8B5CF6" },
-    { icon: Percent,     label: "Completion Rate",    value: fmtPct(kpis.completionRate), color: "#3B82F6",
+    { icon: TrendingUp,  label: "Extras Delivered",   value: fmt(kpis.totalExtra),        color: "#BE98FF" },
+    { icon: Percent,     label: "Completion Rate",    value: fmtPct(kpis.completionRate), color: "#5053C8",
       sub: kpis.completionRate >= 95 ? "Excellent" : kpis.completionRate >= 80 ? "On Track" : "Needs Attention",
       trend: kpis.completionRate >= 90 ? "up" as const : "down" as const },
-    { icon: Clock,       label: "Hours Delivered",    value: fmtHours(kpis.totalHDelivered), color: "#3B82F6" },
+    { icon: Clock,       label: "Hours Delivered",    value: fmtHours(kpis.totalHDelivered), color: "#5053C8" },
     { icon: Percent,     label: "Hours Efficiency",   value: fmtPct(kpis.hoursEfficiency), color: "#F59E0B",
       sub: kpis.hoursEfficiency >= 90 ? "On Budget" : "Over Budget" },
-    { icon: Users,       label: "Active Brands",      value: fmt(kpis.activeBrands),      color: "#A78BFA" },
+    { icon: Users,       label: "Active Brands",      value: fmt(kpis.activeBrands),      color: "#BE98FF" },
     { icon: Globe,       label: "Platforms",          value: fmt(kpis.activePlatforms),   color: "#34D399" },
-    { icon: Wrench,      label: "Services",           value: fmt(kpis.activeServices),    color: "#FB923C" },
-    { icon: CalendarDays,label: "Months Tracked",     value: fmt(kpis.activeMonths),      color: "#38BDF8" },
-    { icon: Package,     label: "Total Records",      value: fmt(kpis.totalRows),         color: "#6366F1" },
-    { icon: TrendingUp,  label: "Over-Delivery Rate", value: fmtPct(kpis.overDeliveryRate), color: "#8B5CF6" },
+    { icon: Wrench,      label: "Services",           value: fmt(kpis.activeServices),    color: "#8B5CF6" },
+    { icon: CalendarDays,label: "Months Tracked",     value: fmt(kpis.activeMonths),      color: "#7B6FE0" },
+    { icon: Package,     label: "Total Records",      value: fmt(kpis.totalRows),         color: "#5053C8" },
+    { icon: TrendingUp,  label: "Over-Delivery Rate", value: fmtPct(kpis.overDeliveryRate), color: "#BE98FF" },
   ];
 
   const areaData = byMonth.map((m) => ({
@@ -172,8 +172,8 @@ export function ExecutiveOverview() {
             <AreaChart data={areaData} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
               <defs>
                 <linearGradient id="gPlanned" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#5053C8" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#5053C8" stopOpacity={0} />
                 </linearGradient>
                 <linearGradient id="gDelivered" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#34D399" stopOpacity={0.2} />
@@ -185,7 +185,7 @@ export function ExecutiveOverview() {
               <YAxis tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="Planned" stroke="#3B82F6" fill="url(#gPlanned)" strokeWidth={2} />
+              <Area type="monotone" dataKey="Planned" stroke="#5053C8" fill="url(#gPlanned)" strokeWidth={2} />
               <Area type="monotone" dataKey="Delivered" stroke="#34D399" fill="url(#gDelivered)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
@@ -228,7 +228,7 @@ export function ExecutiveOverview() {
               <XAxis type="number" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
               <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} width={58} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="Delivered" fill="#3B82F6" radius={[0, 4, 4, 0]}>
+              <Bar dataKey="Delivered" fill="#5053C8" radius={[0, 4, 4, 0]}>
                 {platformData.map((_, i) => (
                   <Cell key={i} fill={getColor(i)} />
                 ))}

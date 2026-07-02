@@ -70,8 +70,8 @@ export function PerformanceDashboard() {
             <ComposedChart data={monthlyData} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
               <defs>
                 <linearGradient id="gP2" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.15} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#5053C8" stopOpacity={0.15} />
+                  <stop offset="95%" stopColor="#5053C8" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -79,8 +79,8 @@ export function PerformanceDashboard() {
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area type="monotone" dataKey="Planned" fill="url(#gP2)" stroke="#3B82F6" strokeWidth={2} />
-              <Bar dataKey="Extra" fill="#8B5CF6" radius={[3, 3, 0, 0]} />
+              <Area type="monotone" dataKey="Planned" fill="url(#gP2)" stroke="#5053C8" strokeWidth={2} />
+              <Bar dataKey="Extra" fill="#BE98FF" radius={[3, 3, 0, 0]} />
               <Line type="monotone" dataKey="Delivered" stroke="#34D399" strokeWidth={2.5} dot={{ r: 3 }} />
             </ComposedChart>
           </ResponsiveContainer>
@@ -96,9 +96,9 @@ export function PerformanceDashboard() {
               <Line
                 type="monotone"
                 dataKey="Completion"
-                stroke="#3B82F6"
+                stroke="#5053C8"
                 strokeWidth={2.5}
-                dot={{ r: 4, fill: "#3B82F6" }}
+                dot={{ r: 4, fill: "#5053C8" }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -116,8 +116,8 @@ export function PerformanceDashboard() {
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip content={<CustomTooltip />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="Planned" fill="#93C5FD" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Delivered" fill="#3B82F6" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Planned" fill="#B5B9FE" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Delivered" fill="#5053C8" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -130,8 +130,8 @@ export function PerformanceDashboard() {
               <YAxis tick={{ fontSize: 10 }} />
               <Tooltip content={<CustomTooltip formatter={(v) => [`${v}h`, ""]} />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="HPlanned" name="Planned Hours" fill="#BFDBFE" radius={[3, 3, 0, 0]} />
-              <Bar dataKey="HDelivered" name="Actual Hours" fill="#3B82F6" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="HPlanned" name="Planned Hours" fill="#CFE7FE" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="HDelivered" name="Actual Hours" fill="#5053C8" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -147,8 +147,8 @@ export function PerformanceDashboard() {
               <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={78} />
               <Tooltip content={<CustomTooltip formatter={(v) => [`${v}h`, ""]} />} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Bar dataKey="HPlanned" name="Planned" fill="#93C5FD" radius={[0, 3, 3, 0]} />
-              <Bar dataKey="HDelivered" name="Actual" fill="#3B82F6" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="HPlanned" name="Planned" fill="#B5B9FE" radius={[0, 3, 3, 0]} />
+              <Bar dataKey="HDelivered" name="Actual" fill="#5053C8" radius={[0, 3, 3, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
