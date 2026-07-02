@@ -5,20 +5,61 @@ const SHEET_ID =
   "1MC35b4aooXQNZJL4NVFZUtHz2sjtQV-impyRVpFqH4Q";
 const SHEET_GID = process.env.NEXT_PUBLIC_SHEET_GID || "656440254";
 
-const MONTH_ORDER: Record<string, number> = {
-  january: 1, february: 2, march: 3, april: 4,
-  may: 5, june: 6, july: 7, august: 8,
-  september: 9, october: 10, november: 11, december: 12,
+// Maps full names AND 3-letter abbreviations to a month number.
+const MONTH_NAMES: Record<string, number> = {
+  jan: 1, january: 1,
+  feb: 2, february: 2,
+  mar: 3, march: 3,
+  apr: 4, april: 4,
+  may: 5,
+  jun: 6, june: 6,
+  jul: 7, july: 7,
+  aug: 8, august: 8,
+  sep: 9, sept: 9, september: 9,
+  oct: 10, october: 10,
+  nov: 11, november: 11,
+  dec: 12, december: 12,
 };
 
-function inferYear(monthNum: number, prevMonthNum: number | null, prevYear: number): number {
-  if (prevMonthNum === null) {
-    // First row: if month is late in year (Oct-Dec) assume 2024, else 2025
-    return monthNum >= 10 ? 2024 : 2025;
+// Parses a Month cell into { month: 1-12, year }. Handles formats like:
+//   "01 / Nov /2024", "1/11/2024", "Nov 2024", "November 2024",
+//   "2024-11-01", "11/2024"
+function parseMonthCell(raw: string): { month: number; year: number } | null {
+  if (!raw) return null;
+  const s = raw.trim();
+
+  // Find a 4-digit year anywhere in the string
+  const yearMatch = s.match(/\b(20\d{2})\b/);
+
+  // 1) Named month (Nov, November, …)
+  const nameMatch = s.toLowerCase().match(/[a-z]+/);
+  if (nameMatch && MONTH_NAMES[nameMatch[0]] !== undefined) {
+    const month = MONTH_NAMES[nameMatch[0]];
+    const year = yearMatch ? Number(yearMatch[1]) : new Date().getFullYear();
+    return { month, year };
   }
-  // Crossed year boundary going forward
-  if (monthNum < prevMonthNum) return prevYear + 1;
-  return prevYear;
+
+  // 2) Numeric date: pull all number groups
+  const nums = s.match(/\d+/g);
+  if (nums && nums.length >= 2) {
+    const parts = nums.map(Number);
+    // ISO-ish: 2024-11-01
+    if (parts[0] > 1900) {
+      return { month: clampMonth(parts[1]), year: parts[0] };
+    }
+    // DD/MM/YYYY or MM/YYYY  → find the year, the other 1-12 value is month
+    const year = yearMatch ? Number(yearMatch[1]) : parts[parts.length - 1];
+    // Prefer the part that looks like a month (1-12) and isn't the year
+    const candidates = parts.filter((p) => p !== year);
+    const month = candidates.find((p) => p >= 1 && p <= 12) ?? candidates[candidates.length - 1] ?? 1;
+    return { month: clampMonth(month), year };
+  }
+
+  return null;
+}
+
+function clampMonth(m: number): number {
+  return Math.min(12, Math.max(1, m));
 }
 
 function parseNum(val: string | undefined): number {
@@ -53,8 +94,6 @@ export function parseCSV(raw: string): SheetRow[] {
   };
 
   const rows: SheetRow[] = [];
-  let prevMonthNum: number | null = null;
-  let prevYear = 2024;
 
   for (let i = 1; i < lines.length; i++) {
     const cols = splitCSVLine(lines[i]);
@@ -66,25 +105,22 @@ export function parseCSV(raw: string): SheetRow[] {
     // Skip empty rows
     if (!company && !monthRaw && !service) continue;
 
-    const monthLower = monthRaw.toLowerCase().trim();
-    const monthNum = MONTH_ORDER[monthLower] ?? 0;
+    const parsed = parseMonthCell(monthRaw);
+    const monthNum = parsed?.month ?? 0;
+    const year = parsed?.year ?? 0;
 
-    const year = monthNum > 0
-      ? inferYear(monthNum, prevMonthNum, prevYear)
-      : prevYear;
-
-    if (monthNum > 0) {
-      prevMonthNum = monthNum;
-      prevYear = year;
-    }
-
-    const monthKey = monthNum > 0
+    const monthKey = parsed
       ? `${year}-${String(monthNum).padStart(2, "0")}`
       : "0000-00";
 
+    // Clean, human-readable month label e.g. "November 2024"
+    const monthLabel = parsed
+      ? new Date(year, monthNum - 1, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" })
+      : (monthRaw || "Unknown");
+
     rows.push({
       company: company || "Unknown",
-      month: monthRaw || "Unknown",
+      month: monthLabel,
       service: service || "Unknown",
       platform: get(cols, colIdx.platform) || "-",
       type: get(cols, colIdx.type) || "-",
