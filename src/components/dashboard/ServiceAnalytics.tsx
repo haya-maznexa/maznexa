@@ -5,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChartCard } from "@/components/charts/ChartCard";
 import { CustomTooltip } from "@/components/charts/CustomTooltip";
-import { fmt, fmtPct, fmtHours, rateColor, getColor, CHART_COLORS } from "@/lib/utils";
+import { fmt, fmtPct, fmtHours, rateColor, getColor, CHART_COLORS, shortMonthLabel } from "@/lib/utils";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend, RadarChart, Radar, PolarGrid, PolarAngleAxis,
+  AreaChart, Area, ComposedChart, Line,
 } from "recharts";
+import { Clock } from "lucide-react";
 
 const SERVICE_ICONS: Record<string, string> = {
   "Social Media Management": "📱",
@@ -21,7 +23,29 @@ const SERVICE_ICONS: Record<string, string> = {
 };
 
 export function ServiceAnalytics() {
-  const { isLoading, byService } = useSheetData();
+  const { isLoading, byService, filtered } = useSheetData();
+
+  // ── Per-service monthly hours (only services that logged hours) ──
+  const hoursServices = byService.filter((s) => s.hDelivered > 0);
+  const perServiceMonthly = hoursServices.map((s) => {
+    const rows = filtered.filter((r) => r.service === s.service);
+    const byMonthMap = new Map<string, { planned: number; actual: number }>();
+    for (const r of rows) {
+      if (!r.monthKey || r.monthKey === "0000-00") continue;
+      const cur = byMonthMap.get(r.monthKey) ?? { planned: 0, actual: 0 };
+      cur.planned += r.hDeliverables;
+      cur.actual += r.hDelivered;
+      byMonthMap.set(r.monthKey, cur);
+    }
+    const series = Array.from(byMonthMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([key, v]) => ({
+        name: shortMonthLabel(key),
+        Planned: Math.round(v.planned),
+        Actual: Math.round(v.actual),
+      }));
+    return { service: s.service, hPlanned: s.hPlanned, hDelivered: s.hDelivered, series };
+  });
 
   const data = byService.map((s, i) => ({
     name: s.service.length > 14 ? s.service.slice(0, 14) + "…" : s.service,
@@ -226,6 +250,80 @@ export function ServiceAnalytics() {
             </RadarChart>
           </ResponsiveContainer>
         </ChartCard>
+      </div>
+
+      {/* ── Separate hours chart per service ── */}
+      <div>
+        <div className="flex items-center gap-2 mb-4 mt-2">
+          <Clock className="w-4 h-4 text-primary" />
+          <h2 className="text-sm font-semibold text-foreground">
+            Hours by Service — Monthly Breakdown
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            Planned vs actual hours per month, one chart per service
+          </span>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {perServiceMonthly.map((svc, idx) => {
+            const color = CHART_COLORS[idx % CHART_COLORS.length];
+            const variance = svc.hDelivered - svc.hPlanned;
+            return (
+              <ChartCard
+                key={svc.service}
+                title={`${SERVICE_ICONS[svc.service] ?? "⚙️"}  ${svc.service}`}
+                subtitle={`${fmtHours(svc.hPlanned)} planned · ${fmtHours(svc.hDelivered)} actual · ${variance >= 0 ? "+" : ""}${fmtHours(variance)} variance`}
+                height={240}
+                loading={isLoading}
+                action={
+                  <Badge
+                    variant="outline"
+                    style={{ borderColor: color, color }}
+                    className="text-[10px]"
+                  >
+                    {fmtHours(svc.hDelivered)}
+                  </Badge>
+                }
+              >
+                {svc.series.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-xs text-muted-foreground">
+                    No hours in selected period
+                  </div>
+                ) : (
+                  <ResponsiveContainer>
+                    <ComposedChart data={svc.series} margin={{ top: 4, right: 8, bottom: 0, left: -18 }}>
+                      <defs>
+                        <linearGradient id={`grad-${idx}`} x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={color} stopOpacity={0.22} />
+                          <stop offset="95%" stopColor={color} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} />
+                      <Tooltip content={<CustomTooltip formatter={(v, n) => [`${fmtHours(Number(v))}`, n]} />} />
+                      <Legend wrapperStyle={{ fontSize: 11 }} />
+                      <Area
+                        type="monotone"
+                        dataKey="Actual"
+                        stroke={color}
+                        fill={`url(#grad-${idx})`}
+                        strokeWidth={2.5}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="Planned"
+                        stroke="#94A3B8"
+                        strokeWidth={2}
+                        strokeDasharray="5 3"
+                        dot={false}
+                      />
+                    </ComposedChart>
+                  </ResponsiveContainer>
+                )}
+              </ChartCard>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
