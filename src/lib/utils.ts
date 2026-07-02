@@ -27,24 +27,30 @@ export function shortMonthLabel(monthKey: string): string {
 }
 
 // ─── Date range from preset ───────────────────────────────────────────────────
+// `reference` is the anchor date. For historical sheet data we anchor to the
+// latest month present in the data, so "This Month", "Last 30 Days" etc. stay
+// meaningful even when the sheet is not up to the current real-world date.
 
-export function resolveDateRange(filters: FilterState): { from: Date; to: Date } | null {
-  const today = new Date();
+export function resolveDateRange(
+  filters: FilterState,
+  reference?: Date
+): { from: Date; to: Date } | null {
+  const anchor = reference ?? new Date();
   switch (filters.preset) {
     case "last7":
-      return { from: subDays(today, 6), to: today };
+      return { from: subDays(anchor, 6), to: anchor };
     case "last30":
-      return { from: subDays(today, 29), to: today };
+      return { from: subDays(anchor, 29), to: anchor };
     case "thisMonth":
-      return { from: startOfMonth(today), to: endOfMonth(today) };
+      return { from: startOfMonth(anchor), to: endOfMonth(anchor) };
     case "prevMonth": {
-      const prev = subMonths(today, 1);
+      const prev = subMonths(anchor, 1);
       return { from: startOfMonth(prev), to: endOfMonth(prev) };
     }
     case "thisQuarter":
-      return { from: startOfQuarter(today), to: endOfQuarter(today) };
+      return { from: startOfQuarter(anchor), to: endOfQuarter(anchor) };
     case "thisYear":
-      return { from: startOfYear(today), to: today };
+      return { from: startOfYear(anchor), to: endOfMonth(anchor) };
     case "allTime":
       return null;
     case "custom":
@@ -56,17 +62,32 @@ export function resolveDateRange(filters: FilterState): { from: Date; to: Date }
   }
 }
 
+// Latest month present in the dataset (used as the date-filter anchor).
+function latestDataDate(rows: SheetRow[]): Date | undefined {
+  let max: Date | undefined;
+  for (const r of rows) {
+    if (!r.monthKey || r.monthKey === "0000-00") continue;
+    const d = new Date(r.year, r.monthIndex - 1, 1);
+    if (!max || d > max) max = d;
+  }
+  // anchor to the end of that month so the whole month is included
+  return max ? endOfMonth(max) : undefined;
+}
+
 // ─── Apply filters to rows ────────────────────────────────────────────────────
 
 export function applyFilters(rows: SheetRow[], filters: FilterState): SheetRow[] {
   let filtered = rows;
 
-  const range = resolveDateRange(filters);
+  const reference = latestDataDate(rows);
+  const range = resolveDateRange(filters, reference);
   if (range) {
     filtered = filtered.filter((r) => {
       if (!r.monthKey || r.monthKey === "0000-00") return true;
-      const rowDate = new Date(r.year, r.monthIndex - 1, 1);
-      return rowDate >= range.from && rowDate <= range.to;
+      // A row represents a whole month; include it if that month overlaps the range.
+      const monthStart = new Date(r.year, r.monthIndex - 1, 1);
+      const monthEnd = endOfMonth(monthStart);
+      return monthEnd >= range.from && monthStart <= range.to;
     });
   }
 
