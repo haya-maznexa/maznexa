@@ -1,10 +1,9 @@
 "use client";
 import Image from "next/image";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, TrendingUp, Building2, Globe, Wrench,
-  Clock, LineChart, Table2, ChevronLeft, ChevronRight, GraduationCap,
+  Clock, LineChart, Table2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { DashboardView } from "@/types";
@@ -116,30 +115,6 @@ export function Sidebar({ view, onViewChange, collapsed, onToggle }: Props) {
             </button>
           );
         })}
-
-        {/* Workshop link */}
-        <div className="pt-2 mt-2 border-t border-border">
-          <Link
-            href="/workshop"
-            title={collapsed ? "Workshop" : undefined}
-            className="w-full flex items-center gap-3 px-2 py-2.5 rounded-lg text-left text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all duration-150 group"
-          >
-            <GraduationCap className="w-[18px] h-[18px] shrink-0 text-muted-foreground group-hover:text-foreground" />
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.span
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.12 }}
-                  className="truncate leading-tight"
-                >
-                  Workshop
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </Link>
-        </div>
       </nav>
 
       {/* Collapse toggle */}
